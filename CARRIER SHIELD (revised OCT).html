@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Carrier Shield SSD</title>
+    <style>
+        :root {
+            --bg-main: #0a0e17;
+            --surface: #141b2d;
+            --surface-border: #232d42;
+            --accent-cyan: #00f2fe;
+            --accent-green: #00e676;
+            --accent-blue: #2979ff;
+            --accent-purple: #7c4dff;
+            --accent-red: #ff5252;
+            --accent-orange: #ff9100;
+            --text-primary: #f0f4f8;
+            --text-secondary: #8a99ad;
+            --glass-bg: rgba(20, 27, 45, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0 0 calc(76px + env(safe-area-inset-bottom)) 0;
+            min-height: 100vh;
+            -webkit-text-size-adjust: 100%;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input, select, textarea {
+            -webkit-user-select: auto;
+            user-select: auto;
+            font-size: 16px !important;
+        }
+
+        /* Remove number input spinner arrows */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--surface-border);
+            padding: calc(12px + env(safe-area-inset-top)) 16px 12px 16px;
+            text-align: center;
+        }
+        .app-header h1 {
+            font-size: 1.1rem;
+            margin: 0;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+        .app-header p {
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            margin: 3px 0 0 0;
+            font-weight: 600;
+        }
+
+        .app-view {
+            display: none;
+            padding: 12px;
+        }
+        .app-view.active {
+            display: block;
+        }
+
+        .card-panel {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+        }
+
+        .panel-hdr {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--surface-border);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        details.workflow-accordion {
+            background: rgba(10, 14, 23, 0.5);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            margin-top: 12px;
+            padding: 2px 12px;
+            transition: all 0.2s ease;
+        }
+        details.workflow-accordion[open] {
+            background: rgba(10, 14, 23, 0.85);
+            border-color: var(--accent-cyan);
+        }
+        summary.accordion-toggle {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--accent-orange);
+            cursor: pointer;
+            padding: 10px 0;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+        summary.accordion-toggle::-webkit-details-marker {
+            display: none;
+        }
+        summary.accordion-toggle::after {
+            content: "▼";
+            font-size: 0.7rem;
+            transition: transform 0.2s;
+        }
+        details.workflow-accordion[open] summary.accordion-toggle::after {
+            transform: rotate(180deg);
+        }
+        .accordion-content {
+            padding-bottom: 12px;
+            border-top: 1px dashed var(--surface-border);
+            margin-top: 4px;
+            padding-top: 8px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(10, 14, 23, 0.9);
+            border: 1px solid var(--surface-border);
+            color: #fff;
+            border-radius: 10px;
+            font-family: inherit;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 8px rgba(0,242,254,0.25);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+        .input-row > div {
+            flex: 1;
+        }
+
+        .time-picker-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .time-picker-wrap input[type="text"] {
+            flex: 1.2;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--accent-cyan);
+            letter-spacing: 0.5px;
+            text-align: center;
+            padding: 12px 4px;
+        }
+        .ampm-select {
+            flex: 0.9;
+            padding: 12px 4px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--accent-cyan);
+            text-align: center;
+            background: rgba(10, 14, 23, 0.95);
+            border: 1px solid var(--surface-border);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .time-btn-now {
+            background: rgba(0, 242, 254, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 10px;
+            padding: 0 10px;
+            height: 46px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            touch-action: manipulation;
+        }
+        .time-btn-now:active {
+            background: var(--accent-cyan);
+            color: #000;
+        }
+
+        .flyer-grid {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .flyer-btn {
+            flex: 1;
+            padding: 10px 4px;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.7rem;
+            color: #fff;
+            text-align: center;
+            cursor: pointer;
+            opacity: 0.4;
+            touch-action: manipulation;
+        }
+        .flyer-btn.active {
+            opacity: 1;
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.25);
+        }
+        .btn-orange-sel { background: #d35400; }
+        .btn-pink-sel { background: #c2185b; }
+        .btn-blue-sel { background: #0288d1; }
+
+        .action-btn {
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            touch-action: manipulation;
+        }
+        .action-btn:active {
+            opacity: 0.85;
+            transform: scale(0.98);
+        }
+        .btn-cyan { background: linear-gradient(135deg, #00b4db, #0083b0); color: #fff; }
+        .btn-green { background: linear-gradient(135deg, #11998e, #38ef7d); color: #000; font-weight: 900; }
+        .btn-purple { background: linear-gradient(135deg, #8e2de2, #4a00e0); color: #fff; }
+        .btn-orange { background: linear-gradient(135deg, #ff8008, #ffc837); color: #000; font-weight: 900; }
+
+        .camera-btn-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        .camera-btn-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .break-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .break-btn {
+            background: rgba(10, 14, 23, 0.9);
+            border: 1px solid var(--surface-border);
+            color: var(--text-primary);
+            padding: 14px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-align: center;
+            touch-action: manipulation;
+        }
+        .break-btn:active {
+            background: var(--surface-border);
+            color: var(--accent-cyan);
+        }
+
+        .check-container {
+            display: flex;
+            align-items: center;
+            background: rgba(10, 14, 23, 0.9);
+            border: 1px solid var(--surface-border);
+            padding: 14px;
+            border-radius: 10px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .check-container input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            accent-color: var(--accent-cyan);
+            -webkit-appearance: checkbox !important;
+            appearance: checkbox !important;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .logged-item {
+            background: rgba(10, 14, 23, 0.9);
+            border: 1px solid var(--surface-border);
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: calc(64px + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid var(--surface-border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.52rem;
+            font-weight: 800;
+            cursor: pointer;
+            flex: 1;
+            height: 100%;
+            touch-action: manipulation;
+            padding: 0 2px;
+            text-align: center;
+        }
+        .nav-item.active {
+            color: var(--accent-cyan);
+        }
+        .nav-item span.icon {
+            font-size: 1.1rem;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-header">
+        <h1>Carrier Shield SSD</h1>
+        <p>Pro Operational Tracker & Rights Protection</p>
+    </div>
+
+    <!-- VIEW 1: MORNING SETUP & DEPOT OPS -->
+    <div id="view-am" class="app-view active">
+        <div class="card-panel">
+            <div class="panel-hdr">Route Information & Clock-In</div>
+            <label>Route Number</label>
+            <input type="text" id="routeNo">
+            
+            <div class="input-row">
+                <div>
+                    <label>Clock-In Time</label>
+                    <div class="time-picker-wrap">
+                        <input type="text" id="clockInTime">
+                        <select id="clockInAmpm" class="ampm-select">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                        <button type="button" class="time-btn-now" data-target-input="clockInTime" data-target-ampm="clockInAmpm">⚡ NOW</button>
+                    </div>
+                </div>
+                <div>
+                    <label>Depot Departure Time</label>
+                    <div class="time-picker-wrap">
+                        <input type="text" id="depotDepartureTime">
+                        <select id="depotDepartureAmpm" class="ampm-select">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                        <button type="button" class="time-btn-now" data-target-input="depotDepartureTime" data-target-ampm="depotDepartureAmpm">⚡ NOW</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-row" style="margin-top:12px;">
+                <div>
+                    <label>Letter Trays (Mono)</label>
+                    <input type="number" id="monoTrays">
+                </div>
+                <div>
+                    <label>Manual / OS Trays</label>
+                    <input type="number" id="osTrays">
+                </div>
+            </div>
+
+            <label>3-Day Flyer Split Sequence:</label>
+            <div class="flyer-grid">
+                <div class="flyer-btn btn-orange-sel active" data-color="Orange">ORANGE<br>(Day 1)</div>
+                <div class="flyer-btn btn-pink-sel" data-color="Pink">PINK<br>(Day 2)</div>
+                <div class="flyer-btn btn-blue-sel" data-color="Blue">BLUE<br>(Day 3)</div>
+            </div>
+
+            <div class="input-row">
+                <div>
+                    <label>Active Flyer Sets Total</label>
+                    <input type="number" id="flyerSets">
+                </div>
+                <div>
+                    <label>Route Kit Avg Sets</label>
+                    <input type="number" id="form81Sets">
+                </div>
+            </div>
+
+            <div class="input-row" style="margin-top: 10px;">
+                <div>
+                    <label>Prep Start Time</label>
+                    <div class="time-picker-wrap">
+                        <input type="text" id="prepStart">
+                        <select id="prepStartAmpm" class="ampm-select">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                        <button type="button" class="time-btn-now" data-target-input="prepStart" data-target-ampm="prepStartAmpm">⚡ NOW</button>
+                    </div>
+                </div>
+                <div>
+                    <label>Prep End Time</label>
+                    <div class="time-picker-wrap">
+                        <input type="text" id="prepEnd">
+                        <select id="prepEndAmpm" class="ampm-select">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                        <button type="button" class="time-btn-now" data-target-input="prepEnd" data-target-ampm="prepEndAmpm">⚡ NOW</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <details class="workflow-accordion">
+            <summary class="accordion-toggle">🛠️ Depot Delays, Prep & Tasks (Optional / Heavy Days)</summary>
+            <div class="accordion-content">
+                <label class="check-container" style="margin-top:0;">
+                    <input type="checkbox" id="fiveMinTalk">
+                    <span>5-Min Safety Talk Attended</span>
+                </label>
+                
+                <div id="talkTopicGroup" style="margin-top: 6px;">
+                    <input type="text" id="fiveMinTalkTopic">
+                </div>
+
+                <label class="check-container">
+                    <input type="checkbox" id="gotGas">
+                    <span>Fueling Station Stop Required Today</span>
+                </label>
+
+                <label class="check-container">
+                    <input type="checkbox" id="snowClearing">
+                    <span>❄️ Vehicle De-Icing & Snow Clearing Required</span>
+                </label>
+
+                <label class="check-container">
+                    <input type="checkbox" id="flyerHeavyLoad">
+                    <span>📦 Extra Loading Time (Heavy Flyer Volume/Weight)</span>
+                </label>
+
+                <label style="margin-top:10px;">Late Truck Delay (Time Allowed to Go)</label>
+                <div class="time-picker-wrap">
+                    <input type="text" id="lateTruckTime">
+                    <select id="lateTruckAmpm" class="ampm-select">
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+                    <button type="button" class="time-btn-now" data-target-input="lateTruckTime" data-target-ampm="lateTruckAmpm">⚡ NOW</button>
+                </div>
+            </div>
+        </details>
+
+        <div class="card-panel" style="margin-top: 14px;">
+            <div class="panel-hdr">Scanner Baseline</div>
+            <div class="input-row">
+                <div>
+                    <label>Route Kit Avg Parcels</label>
+                    <input type="number" id="baseParcels">
+                </div>
+                <div>
+                    <label>OFD Parcels</label>
+                    <input type="number" id="ofdTotal">
+                </div>
+            </div>
+            <div class="input-row">
+                <div>
+                    <label>Signatures</label>
+                    <input type="number" id="ofdSigs">
+                </div>
+                <div>
+                    <label>Stops</label>
+                    <input type="number" id="pciStops">
+                </div>
+            </div>
+            <div style="margin-top: 6px;">
+                <label style="color:var(--accent-orange);">Customs / Collections Count (CODs)</label>
+                <input type="number" id="customsCount">
+            </div>
+        </div>
+
+        <details class="workflow-accordion" style="border-color: var(--accent-red);">
+            <summary class="accordion-toggle" style="color: var(--accent-red);">⚖️ Article 48 & 33.13 Overtime / Escalation Protections</summary>
+            <div class="accordion-content">
+                <label>AM Overload Identified?</label>
+                <select id="amRequestMade">
+                    <option value="No">No - Workload Normal / Within 8 Hrs</option>
+                    <option value="Yes">Yes - Overload Identified (Escalate Under Art 48)</option>
+                </select>
+
+                <div id="refusalDetailsGroup" style="display: none; margin-top: 8px;">
+                    <label>Management Response</label>
+                    <select id="amResponse">
+                        <option value="Refused OT & Refused Support (Full Workload Ordered)">Refused OT & Refused Support (Full Workload Ordered)</option>
+                        <option value="Approved Overtime">Approved Overtime</option>
+                        <option value="Approved Helper Support">Approved Helper Support</option>
+                        <option value="Instructed to Curtail Workload">Instructed to Curtail Workload</option>
+                    </select>
+
+                    <label>Supervisor / Manager Name</label>
+                    <input type="text" id="amSupervisor">
+
+                    <label>Directives & Protection Notes</label>
+                    <textarea id="amRefusalReason" rows="2"></textarea>
+
+                    <label style="margin-top:8px;">Union Steward Record / Notified? (Article 50)</label>
+                    <select id="amStewardNotified">
+                        <option value="No">No / Not Required</option>
+                        <option value="Yes">Yes (Article 50 Record)</option>
+                    </select>
+                </div>
+
+                <div style="border-top: 1px dashed var(--surface-border); margin-top: 12px; padding-top: 8px;">
+                    <label class="check-container" style="margin-top:0; border-color: var(--accent-orange);">
+                        <input type="checkbox" id="amArt33Check">
+                        <span style="color: var(--accent-orange);">Request Article 33.13 Route Burden / Volume Review</span>
+                    </label>
+                    <div id="amArt33Group" style="display:none; margin-top:8px;">
+                        <label>Workflow Period Focus</label>
+                        <select id="amArt33Workflow">
+                            <option value="AM Workflow">AM Workflow Check (Depot / Prep)</option>
+                            <option value="PM Workflow">PM Workflow Check (Street Delivery)</option>
+                            <option value="Full Day Workflow">Full Day Workflow (AM & PM)</option>
+                        </select>
+                        <label style="margin-top:6px;">Details / Specific Issues for Review</label>
+                        <textarea id="amArt33Notes" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <button type="button" class="action-btn btn-green" id="btn-save-am" style="margin-top:16px;">Lock Depot Setup</button>
+        <p id="am-status" style="color:var(--accent-green); font-size:0.78rem; text-align:center; margin-top:6px; font-weight:700;"></p>
+    </div>
+
+    <!-- VIEW 2: APARTMENTS -->
+    <div id="view-buildings" class="app-view">
+        <div class="card-panel">
+            <div class="panel-hdr">Apartment / Building Tracker</div>
+            <label>Building Address</label>
+            <input type="text" id="bldAddress">
+
+            <div class="input-row">
+                <div>
+                    <label>Time In</label>
+                    <div class="time-picker-wrap">
+                        <input type="text" id="bldTimeIn">
+                        <select id="bldTimeInAmpm" class="ampm-select">
+                            <option value="AM">AM</option>
+                            <option value="PM" selected>PM</option>
+                        </select>
+                        <button type="button" class="time-btn-now" data-target-input="bldTimeIn" data-target-ampm="bldTimeInAmpm">⚡ NOW</button>
+                    </div>
+                </div>
+                <div>
+                    <label>Time Out</label>
+                    <div class="time-picker-wrap">
+                        <input type="text" id="bldTimeOut">
+                        <select id="bldTimeOutAmpm" class="ampm-select">
+                            <option value="AM">AM</option>
+                            <option value="PM" selected>PM</option>
+                        </select>
+                        <button type="button" class="time-btn-now" data-target-input="bldTimeOut" data-target-ampm="bldTimeOutAmpm">⚡ NOW</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div>
+                    <label>Flyers</label>
+                    <input type="number" id="bldFlyers">
+                </div>
+                <div>
+                    <label>Parcels</label>
+                    <input type="number" id="bldParcels">
+                </div>
+            </div>
+
+            <label class="check-container" style="border-color: var(--accent-cyan); margin-top: 10px;">
+                <input type="checkbox" id="bldDollyRequired">
+                <span style="color: var(--accent-cyan); font-weight: 800;">🛒 Dolly Required for this Stop</span>
+            </label>
+
+            <details class="workflow-accordion">
+                <summary class="accordion-toggle">➕ Additional Delivery Details (Oversize, Customs, Dolly Trips, Notes & Exceptions)</summary>
+                <div class="accordion-content">
+                    <div class="input-row">
+                        <div>
+                            <label>Oversize</label>
+                            <input type="number" id="bldOversize">
+                        </div>
+                        <div>
+                            <label>Signatures</label>
+                            <input type="number" id="bldSigs">
+                        </div>
+                    </div>
+
+                    <div class="input-row">
+                        <div>
+                            <label>Customs (Payment Due)</label>
+                            <input type="number" id="bldCustoms">
+                        </div>
+                        <div>
+                            <label>Dolly Trips Count</label>
+                            <input type="number" id="bldDollyTrips">
+                        </div>
+                    </div>
+
+                    <div class="input-row" style="margin-top: 6px;">
+                        <div>
+                            <label style="color: var(--accent-red);">🚫 Do Not Safe Drop Count</label>
+                            <input type="number" id="bldDoNotSafeDrop">
+                        </div>
+                        <div>
+                            <label style="color: var(--accent-orange);">📝 Carded Count (PDC)</label>
+                            <input type="number" id="bldCarded">
+                        </div>
+                    </div>
+
+                    <label style="margin-top:8px; color: var(--accent-orange);">Delivery Notes / Details</label>
+                    <input type="text" id="bldCustomNotes">
+
+                    <div class="camera-btn-wrapper" style="margin-top:10px;">
+                        <button type="button" class="action-btn btn-cyan">📷 Snap Load Photo</button>
+                        <input type="file" id="bldPhotoInput" accept="image/*" capture="environment">
+                    </div>
+                    <div id="bld-photo-status" style="font-size:0.72rem; color:var(--accent-cyan); margin-top:4px; font-weight:700;"></div>
+                </div>
+            </details>
+
+            <button type="button" class="action-btn btn-purple" id="btn-add-building" style="margin-top:14px;">Log Building Entry</button>
+        </div>
+
+        <div class="card-panel">
+            <div class="panel-hdr">Logged Buildings Today</div>
+            <div id="building-list"></div>
+        </div>
+    </div>
+
+    <!-- VIEW 3: BUSINESS -->
+    <div id="view-business" class="app-view">
+        <div class="card-panel">
+            <div class="panel-hdr">Business Delivery Tracker</div>
+            <label>Business Name / Address</label>
+            <input type="text" id="bizAddress">
+
+            <div class="input-row">
+                <div>
+                    <label>Time In</label>
+                    <div class="time-picker-wrap">
+                        <input type="text" id="bizTimeIn">
+                        <select id="bizTimeInAmpm" class="ampm-select">
+                            <option value="AM">AM</option>
+                            <option value="PM" selected>PM</option>
+                        </select>
+                        <button type="button" class="time-btn-now" data-target-input="bizTimeIn" data-target-ampm="bizTimeInAmpm">⚡ NOW</button>
+                    </div>
+                </div>
+                <div>
+                    <label>Time Out</label>
+                    <div class="time-picker-wrap">
+                        <input type="text" id="bizTimeOut">
+                        <select id="bizTimeOutAmpm" class="ampm-select">
+                            <option value="AM">AM</option>
+                            <option value="PM" selected>PM</option>
+                        </select>
+                        <button type="button" class="time-btn-now" data-target-input="bizTimeOut" data-target-ampm="bizTimeOutAmpm">⚡ NOW</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div>
+                    <label>Parcels</label>
+                    <input type="number" id="bizParcels">
+                </div>
+                <div>
+                    <label>Signatures</label>
+                    <input type="number" id="bizSigs">
+                </div>
+            </div>
+
+            <label class="check-container" style="border-color: var(--accent-cyan); margin-top: 10px;">
+                <input type="checkbox" id="bizDollyRequired">
+                <span style="color: var(--accent-cyan); font-weight: 800;">🛒 Dolly Required for this Stop</span>
+            </label>
+
+            <details class="workflow-accordion">
+                <summary class="accordion-toggle">➕ Additional Business Options (Oversize, Customs, Dolly Trips & Exceptions)</summary>
+                <div class="accordion-content">
+                    <div class="input-row">
+                        <div>
+                            <label>Oversize</label>
+                            <input type="number" id="bizOversize">
+                        </div>
+                        <div>
+                            <label>Customs (Payment Due)</label>
+                            <input type="number" id="bizCustoms">
+                        </div>
+                    </div>
+
+                    <div class="input-row">
+                        <div>
+                            <label>Dolly Trips Count</label>
+                            <input type="number" id="bizDollyTrips">
+                        </div>
+                        <div></div>
+                    </div>
+
+                    <div class="input-row" style="margin-top: 6px;">
+                        <div>
+                            <label style="color: var(--accent-red);">🚫 Do Not Safe Drop Count</label>
+                            <input type="number" id="bizDoNotSafeDrop">
+                        </div>
+                        <div>
+                            <label style="color: var(--accent-orange);">📝 Carded Count (Closed)</label>
+                            <input type="number" id="bizCarded">
+                        </div>
+                    </div>
+
+                    <label style="margin-top:8px; color: var(--accent-orange);">Delivery Notes / Details</label>
+                    <input type="text" id="bizCustomNotes">
+                </div>
+            </details>
+
+            <button type="button" class="action-btn btn-purple" id="btn-add-business" style="margin-top:14px;">Log Business Delivery</button>
+        </div>
+
+        <div class="card-panel">
+            <div class="panel-hdr">Logged Business Deliveries</div>
+            <div id="business-list"></div>
+        </div>
+    </div>
+
+    <!-- VIEW 4: RESIDENTIAL -->
+    <div id="view-residential" class="app-view">
+        <div class="card-panel">
+            <div class="panel-hdr">Residential Door-to-Door Tracker</div>
+            <label>House / Street Address</label>
+            <input type="text" id="resAddress">
+
+            <div class="input-row">
+                <div>
+                    <label>Time In</label>
+                    <div class="time-picker-wrap">
+                        <input type="text" id="resTimeIn">
+                        <select id="resTimeInAmpm" class="ampm-select">
+                            <option value="AM">AM</option>
+                            <option value="PM" selected>PM</option>
+                        </select>
+                        <button type="button" class="time-btn-now" data-target-input="resTimeIn" data-target-ampm="resTimeInAmpm">⚡ NOW</button>
+                    </div>
+                </div>
+                <div>
+                    <label>Time Out</label>
+                    <div class="time-picker-wrap">
+                        <input type="text" id="resTimeOut">
+                        <select id="resTimeOutAmpm" class="ampm-select">
+                            <option value="AM">AM</option>
+                            <option value="PM" selected>PM</option>
+                        </select>
+                        <button type="button" class="time-btn-now" data-target-input="resTimeOut" data-target-ampm="resTimeOutAmpm">⚡ NOW</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div>
+                    <label>Parcels to Door</label>
+                    <input type="number" id="resParcels">
+                </div>
+                <div>
+                    <label>Signatures</label>
+                    <input type="number" id="resSigs">
+                </div>
+            </div>
+
+            <label class="check-container" style="border-color: var(--accent-cyan); margin-top: 10px;">
+                <input type="checkbox" id="resDollyRequired">
+                <span style="color: var(--accent-cyan); font-weight: 800;">🛒 Dolly Required for this Stop</span>
+            </label>
+
+            <details class="workflow-accordion">
+                <summary class="accordion-toggle">➕ Additional Residential Options (Oversize, Customs, Dolly Trips, Notes & Exceptions)</summary>
+                <div class="accordion-content">
+                    <div class="input-row">
+                        <div>
+                            <label>Oversize</label>
+                            <input type="number" id="resOversize">
+                        </div>
+                        <div>
+                            <label>Customs (Payment Due)</label>
+                            <input type="number" id="resCustoms">
+                        </div>
+                    </div>
+
+                    <div class="input-row" style="margin-top: 6px;">
+                        <div>
+                            <label>Dolly Trips Count</label>
+                            <input type="number" id="resDollyTrips">
+                        </div>
+                        <div></div>
+                    </div>
+
+                    <div class="input-row" style="margin-top: 6px;">
+                        <div>
+                            <label style="color: var(--accent-red);">🚫 Do Not Safe Drop Count</label>
+                            <input type="number" id="resDoNotSafeDrop">
+                        </div>
+                        <div>
+                            <label style="color: var(--accent-orange);">📝 Carded Count (No Answer)</label>
+                            <input type="number" id="resCarded">
+                        </div>
+                    </div>
+
+                    <label style="margin-top:8px; color: var(--accent-orange);">Delivery Notes / Details</label>
+                    <input type="text" id="resCustomNotes">
+                </div>
+            </details>
+
+            <button type="button" class="action-btn btn-purple" id="btn-add-residential" style="margin-top:14px;">Log Residential Entry</button>
+        </div>
+
+        <div class="card-panel">
+            <div class="panel-hdr">Logged Residential Deliveries</div>
+            <div id="residential-list"></div>
+        </div>
+    </div>
+
+    <!-- VIEW 5: BREAKS -->
+    <div id="view-breaks" class="app-view">
+        <div class="card-panel">
+            <div class="panel-hdr">One-Tap Rest & Lunch Logger</div>
+            <div class="break-grid">
+                <button type="button" class="break-btn" data-label="10-Min Break Started">⏱️ Start 10-Min</button>
+                <button type="button" class="break-btn" data-label="10-Min Break Ended">✅ End 10-Min</button>
+                <button type="button" class="break-btn" data-label="Lunch / 30 Started">🥪 Start Lunch</button>
+                <button type="button" class="break-btn" data-label="Lunch / 30 Ended">✅ End Lunch</button>
+            </div>
+        </div>
+
+        <div class="card-panel">
+            <div class="panel-hdr">Recorded Break Timestamps</div>
+            <div id="break-list"></div>
+        </div>
+    </div>
+
+    <!-- VIEW 6: SETBACKS -->
+    <div id="view-setbacks" class="app-view">
+        <div class="card-panel">
+            <div class="panel-hdr">On-Route Setbacks & Hazards</div>
+            
+            <label class="check-container" style="margin-top:0;">
+                <input type="checkbox" id="catFooting">
+                <span>Unmaintained Footing / Ice / Weather</span>
+            </label>
+            <label class="check-container">
+                <input type="checkbox" id="catDog">
+                <span>🐕 Loose Dog / Animal Hazard on Property</span>
+            </label>
+            <label class="check-container">
+                <input type="checkbox" id="catCargo">
+                <span>Obstructed Cargo Floor / Van Overload</span>
+            </label>
+            <label class="check-container">
+                <input type="checkbox" id="catAccess">
+                <span>Elevator Delay / Broken Intercom / Locked Access</span>
+            </label>
+            <label class="check-container">
+                <input type="checkbox" id="catTraffic">
+                <span>Vehicle / Traffic / Road Access Delays</span>
+            </label>
+            <label class="check-container">
+                <input type="checkbox" id="catOther">
+                <span>✏️ Other Hazard / Safety Condition</span>
+            </label>
+
+            <div id="otherHazardGroup" style="display:none; margin-top:8px;">
+                <label>Specify Other Hazard</label>
+                <input type="text" id="otherHazardText">
+            </div>
+
+            <label style="margin-top:12px;">Details / Notes</label>
+            <textarea id="setbackNotes" rows="2"></textarea>
+
+            <button type="button" class="action-btn btn-orange" id="btn-log-setback" style="margin-top:14px;">⚠️ Log Hazard / Setback</button>
+        </div>
+
+        <div class="card-panel">
+            <div class="panel-hdr">Logged Setbacks Today</div>
+            <div id="setback-list"></div>
+        </div>
+    </div>
+
+    <!-- VIEW 7: END OF DAY -->
+    <div id="view-eod" class="app-view">
+        <div class="card-panel" style="border-left: 3px solid var(--accent-green);">
+            <div class="panel-hdr" style="color: var(--accent-green);">End of Day Route Completion & Verification</div>
+            <p style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 0; line-height: 1.4;">
+                Completion verification aligned with delivery sequence sheets and Article 50 / 0.38 job scope factors.
+            </p>
+
+            <div class="input-row" style="margin-top:10px;">
+                <div>
+                    <label>Arrive at Depot Clock-In</label>
+                    <div class="time-picker-wrap">
+                        <input type="text" id="eodArriveDepotTime">
+                        <select id="eodArriveDepotAmpm" class="ampm-select">
+                            <option value="AM">AM</option>
+                            <option value="PM" selected>PM</option>
+                        </select>
+                        <button type="button" class="time-btn-now" data-target-input="eodArriveDepotTime" data-target-ampm="eodArriveDepotAmpm">⚡ NOW</button>
+                    </div>
+                </div>
+                <div>
+                    <label>Official End Time Stamp</label>
+                    <div class="time-picker-wrap">
+                        <input type="text" id="eodOfficialEndTime">
+                        <select id="eodOfficialEndAmpm" class="ampm-select">
+                            <option value="AM">AM</option>
+                            <option value="PM" selected>PM</option>
+                        </select>
+                        <button type="button" class="time-btn-now" data-target-input="eodOfficialEndTime" data-target-ampm="eodOfficialEndAmpm">⚡ NOW</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 10px;">
+                <label>Parcels Delivered</label>
+                <input type="number" id="eodDeliveredParcels">
+            </div>
+
+            <label class="check-container" style="margin-top: 12px; border-color: var(--accent-cyan);">
+                <input type="checkbox" id="eodFlyerComplete">
+                <span style="color: var(--accent-cyan); font-weight: 800;">Flyer of the Day 100% Complete</span>
+            </label>
+            <div id="eodFlyerLeftGroup" style="display:block; margin-top:8px;">
+                <label>What's Left?</label>
+                <input type="text" id="eodFlyerLeft" placeholder="e.g. 2 bundles for Main St.">
+            </div>
+
+            <details class="workflow-accordion" style="margin-top: 14px;">
+                <summary class="accordion-toggle">➕ Additional Job Scope Factors (Returns & Exceptions)</summary>
+                <div class="accordion-content">
+                    <label>Job Scope & 0.38 Distance / Access Factors</label>
+                    <input type="text" id="eodScopeFactors">
+
+                    <label style="margin-top:8px;">Climatic, Volume & Walking Conditions (Article 50)</label>
+                    <select id="eodConditionsFactor">
+                        <option value="Normal">Normal Route Conditions</option>
+                        <option value="Heavy Volume">Heavy Volume Spike</option>
+                        <option value="Extreme Weather / Climatic">Extreme Weather / Climatic Conditions</option>
+                        <option value="Severe Walking / Pathway Hazards">Severe Walking / Pathway Hazards (Ice/Snow)</option>
+                    </select>
+
+                    <label style="margin-top:8px;">Returns / Bring-Back Details & Quantities</label>
+                    <textarea id="eodReturns" rows="2"></textarea>
+                </div>
+            </details>
+
+            <details class="workflow-accordion" style="border-color: var(--accent-orange); margin-top: 10px;">
+                <summary class="accordion-toggle" style="color: var(--accent-orange);">⚖ Article 33.13 Chronic Overburden Review (EOD)</summary>
+                <div class="accordion-content">
+                    <label class="check-container" style="margin-top:0;">
+                        <input type="checkbox" id="eodArt33Check">
+                        <span>File / Escalate Article 33.13 Chronic Overburden Review</span>
+                    </label>
+                    <div id="eodArt33Group" style="display:none; margin-top:8px;">
+                        <label>Daily Overburden / Time Over 8 Hours Details</label>
+                        <textarea id="eodArt33Notes" rows="2"></textarea>
+                    </div>
+                </div>
+            </details>
+
+            <button type="button" class="action-btn btn-green" id="btn-save-eod" style="margin-top: 14px;">Lock End of Day Workflow</button>
+            <p id="eod-status" style="color:var(--accent-green); font-size:0.78rem; text-align:center; margin-top:6px; font-weight:700;"></p>
+        </div>
+    </div>
+
+    <!-- VIEW 8: SUMMARY / EXPORT -->
+    <div id="view-summary" class="app-view">
+        <div class="card-panel">
+            <div class="panel-hdr">End-of-Day Summary & Report</div>
+            <div id="summary-content" style="font-size:0.78rem; line-height:1.45; white-space: pre-line; background: rgba(10,14,23,0.9); padding: 12px; border-radius: 10px; border: 1px solid var(--surface-border);">
+                No data logged yet. Complete morning setup and route logs to generate summary.
+            </div>
+
+            <button type="button" class="action-btn btn-cyan" id="btn-copy-summary" style="margin-top:12px;">📋 Copy Full Report</button>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <div class="bottom-nav">
+        <div class="nav-item active" data-target="view-am">
+            <span class="icon">☀️</span>
+            <span>AM</span>
+        </div>
+        <div class="nav-item" data-target="view-buildings">
+            <span class="icon">🏢</span>
+            <span>Apts</span>
+        </div>
+        <div class="nav-item" data-target="view-business">
+            <span class="icon">🏬</span>
+            <span>Biz</span>
+        </div>
+        <div class="nav-item" data-target="view-residential">
+            <span class="icon">🏡</span>
+            <span>Res</span>
+        </div>
+        <div class="nav-item" data-target="view-breaks">
+            <span class="icon">⏱️</span>
+            <span>Breaks</span>
+        </div>
+        <div class="nav-item" data-target="view-setbacks">
+            <span class="icon">⚠️</span>
+            <span>Hazards</span>
+        </div>
+        <div class="nav-item" data-target="view-eod">
+            <span class="icon">🏁</span>
+            <span>End Day</span>
+        </div>
+        <div class="nav-item" data-target="view-summary">
+            <span class="icon">📊</span>
+            <span>Summary</span>
+        </div>
+    </div>
+
+    <script>
+        let appState = {
+            routeNo: '',
+            clockInTime: '',
+            clockInAmpm: 'AM',
+            depotDepartureTime: '',
+            depotDepartureAmpm: 'AM',
+            monoTrays: '',
+            osTrays: '',
+            flyerColor: 'Orange',
+            flyerSets: '',
+            form81Sets: '',
+            prepStart: '',
+            prepStartAmpm: 'AM',
+            prepEnd: '',
+            prepEndAmpm: 'AM',
+            fiveMinTalk: false,
+            fiveMinTalkTopic: '',
+            gotGas: false,
+            snowClearing: false,
+            flyerHeavyLoad: false,
+            lateTruckTime: '',
+            lateTruckAmpm: 'AM',
+            baseParcels: '',
+            ofdTotal: '',
+            ofdSigs: '',
+            pciStops: '',
+            customsCount: '',
+            amRequestMade: 'No',
+            amResponse: 'Refused OT & Refused Support (Full Workload Ordered)',
+            amSupervisor: '',
+            amRefusalReason: '',
+            amStewardNotified: 'No',
+            amArt33Check: false,
+            amArt33Workflow: 'AM Workflow',
+            amArt33Notes: '',
+            eodArriveDepotTime: '',
+            eodArriveDepotAmpm: 'PM',
+            eodOfficialEndTime: '',
+            eodOfficialEndAmpm: 'PM',
+            eodDeliveredParcels: '',
+            eodFlyerComplete: false,
+            eodFlyerLeft: '',
+            eodScopeFactors: '',
+            eodConditionsFactor: 'Normal',
+            eodReturns: '',
+            eodArt33Check: false,
+            eodArt33Notes: '',
+            buildings: [],
+            businesses: [],
+            residentials: [],
+            breaks: [],
+            setbacks: []
+        };
+
+        function loadSavedState() {
+            const saved = localStorage.getItem('carrier_shield_state');
+            if (saved) {
+                try {
+                    appState = JSON.parse(saved);
+                    restoreUIFromState();
+                } catch (e) {
+                    console.error('Failed to load saved state', e);
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('carrier_shield_state', JSON.stringify(appState));
+        }
+
+        function restoreUIFromState() {
+            setVal('routeNo', appState.routeNo);
+            setVal('clockInTime', appState.clockInTime);
+            setSelect('clockInAmpm', appState.clockInAmpm);
+            setVal('depotDepartureTime', appState.depotDepartureTime);
+            setSelect('depotDepartureAmpm', appState.depotDepartureAmpm);
+            setVal('monoTrays', appState.monoTrays);
+            setVal('osTrays', appState.osTrays);
+            setVal('flyerSets', appState.flyerSets);
+            setVal('form81Sets', appState.form81Sets);
+            setVal('prepStart', appState.prepStart);
+            setSelect('prepStartAmpm', appState.prepStartAmpm);
+            setVal('prepEnd', appState.prepEnd);
+            setSelect('prepEndAmpm', appState.prepEndAmpm);
+            setCheck('fiveMinTalk', appState.fiveMinTalk);
+            setVal('fiveMinTalkTopic', appState.fiveMinTalkTopic);
+            setCheck('gotGas', appState.gotGas);
+            setCheck('snowClearing', appState.snowClearing);
+            setCheck('flyerHeavyLoad', appState.flyerHeavyLoad);
+            setVal('lateTruckTime', appState.lateTruckTime);
+            setSelect('lateTruckAmpm', appState.lateTruckAmpm);
+            setVal('baseParcels', appState.baseParcels);
+            setVal('ofdTotal', appState.ofdTotal);
+            setVal('ofdSigs', appState.ofdSigs);
+            setVal('pciStops', appState.pciStops);
+            setVal('customsCount', appState.customsCount);
+            setSelect('amRequestMade', appState.amRequestMade);
+            if(appState.amRequestMade === 'Yes') document.getElementById('refusalDetailsGroup').style.display = 'block';
+            setSelect('amResponse', appState.amResponse);
+            setVal('amSupervisor', appState.amSupervisor);
+            setVal('amRefusalReason', appState.amRefusalReason);
+            setSelect('amStewardNotified', appState.amStewardNotified);
+            setCheck('amArt33Check', appState.amArt33Check);
+            if(appState.amArt33Check) document.getElementById('amArt33Group').style.display = 'block';
+            setSelect('amArt33Workflow', appState.amArt33Workflow);
+            setVal('amArt33Notes', appState.amArt33Notes);
+
+            setVal('eodArriveDepotTime', appState.eodArriveDepotTime);
+            setSelect('eodArriveDepotAmpm', appState.eodArriveDepotAmpm);
+            setVal('eodOfficialEndTime', appState.eodOfficialEndTime);
+            setSelect('eodOfficialEndAmpm', appState.eodOfficialEndAmpm);
+            setVal('eodDeliveredParcels', appState.eodDeliveredParcels);
+            
+            setCheck('eodFlyerComplete', appState.eodFlyerComplete);
+            document.getElementById('eodFlyerLeftGroup').style.display = appState.eodFlyerComplete ? 'none' : 'block';
+            setVal('eodFlyerLeft', appState.eodFlyerLeft);
+            
+            setVal('eodScopeFactors', appState.eodScopeFactors);
+            setSelect('eodConditionsFactor', appState.eodConditionsFactor);
+            setVal('eodReturns', appState.eodReturns);
+            setCheck('eodArt33Check', appState.eodArt33Check);
+            if(appState.eodArt33Check) document.getElementById('eodArt33Group').style.display = 'block';
+            setVal('eodArt33Notes', appState.eodArt33Notes);
+
+            document.querySelectorAll('.flyer-btn').forEach(btn => {
+                if (btn.getAttribute('data-color') === appState.flyerColor) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            renderBuildings();
+            renderBusinesses();
+            renderResidentials();
+            renderBreaks();
+            renderSetbacks();
+        }
+
+        function setVal(id, val) { const el = document.getElementById(id); if (el) el.value = val !== undefined ? val : ''; }
+        function setSelect(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
+        function setCheck(id, val) { const el = document.getElementById(id); if (el) el.checked = !!val; }
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+                
+                item.classList.add('active');
+                const targetId = item.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+                window.scrollTo(0, 0);
+
+                if (targetId === 'view-summary') {
+                    generateSummary();
+                }
+            });
+        });
+
+        function getFormattedTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            return { time: `${hours}:${minutes}`, ampm: ampm };
+        }
+
+        document.querySelectorAll('.time-btn-now').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetInputId = btn.getAttribute('data-target-input');
+                const targetAmpmId = btn.getAttribute('data-target-ampm');
+                const { time, ampm } = getFormattedTime();
+                
+                const inputEl = document.getElementById(targetInputId);
+                const selectEl = document.getElementById(targetAmpmId);
+                
+                if (inputEl) inputEl.value = time;
+                if (selectEl) selectEl.value = ampm;
+                captureAMInputs();
+            });
+        });
+
+        document.querySelectorAll('.flyer-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.flyer-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                appState.flyerColor = btn.getAttribute('data-color');
+                saveState();
+            });
+        });
+
+        const amRequestSelect = document.getElementById('amRequestMade');
+        const refusalGroup = document.getElementById('refusalDetailsGroup');
+        if (amRequestSelect) {
+            amRequestSelect.addEventListener('change', (e) => {
+                if (e.target.value === 'Yes') {
+                    refusalGroup.style.display = 'block';
+                } else {
+                    refusalGroup.style.display = 'none';
+                }
+                captureAMInputs();
+            });
+        }
+
+        const amArt33Check = document.getElementById('amArt33Check');
+        const amArt33Group = document.getElementById('amArt33Group');
+        if (amArt33Check) {
+            amArt33Check.addEventListener('change', (e) => {
+                amArt33Group.style.display = e.target.checked ? 'block' : 'none';
+                captureAMInputs();
+            });
+        }
+
+        const eodFlyerCheck = document.getElementById('eodFlyerComplete');
+        const eodFlyerLeftGroup = document.getElementById('eodFlyerLeftGroup');
+        if (eodFlyerCheck) {
+            eodFlyerCheck.addEventListener('change', (e) => {
+                eodFlyerLeftGroup.style.display = e.target.checked ? 'none' : 'block';
+                captureEODInputs();
+            });
+        }
+
+        const eodArt33Check = document.getElementById('eodArt33Check');
+        const eodArt33Group = document.getElementById('eodArt33Group');
+        if (eodArt33Check) {
+            eodArt33Check.addEventListener('change', (e) => {
+                eodArt33Group.style.display = e.target.checked ? 'block' : 'none';
+                captureEODInputs();
+            });
+        }
+
+        const catOtherCheck = document.getElementById('catOther');
+        const otherHazardGroup = document.getElementById('otherHazardGroup');
+        if (catOtherCheck) {
+            catOtherCheck.addEventListener('change', (e) => {
+                otherHazardGroup.style.display = e.target.checked ? 'block' : 'none';
+            });
+        }
+
+        function captureAMInputs() {
+            appState.routeNo = document.getElementById('routeNo').value;
+            appState.clockInTime = document.getElementById('clockInTime').value;
+            appState.clockInAmpm = document.getElementById('clockInAmpm').value;
+            appState.depotDepartureTime = document.getElementById('depotDepartureTime').value;
+            appState.depotDepartureAmpm = document.getElementById('depotDepartureAmpm').value;
+            appState.monoTrays = document.getElementById('monoTrays').value;
+            appState.osTrays = document.getElementById('osTrays').value;
+            appState.flyerSets = document.getElementById('flyerSets').value;
+            appState.form81Sets = document.getElementById('form81Sets').value;
+            appState.prepStart = document.getElementById('prepStart').value;
+            appState.prepStartAmpm = document.getElementById('prepStartAmpm').value;
+            appState.prepEnd = document.getElementById('prepEnd').value;
+            appState.prepEndAmpm = document.getElementById('prepEndAmpm').value;
+            appState.fiveMinTalk = document.getElementById('fiveMinTalk').checked;
+            appState.fiveMinTalkTopic = document.getElementById('fiveMinTalkTopic').value;
+            appState.gotGas = document.getElementById('gotGas').checked;
+            appState.snowClearing = document.getElementById('snowClearing').checked;
+            appState.flyerHeavyLoad = document.getElementById('flyerHeavyLoad').checked;
+            appState.lateTruckTime = document.getElementById('lateTruckTime').value;
+            appState.lateTruckAmpm = document.getElementById('lateTruckAmpm').value;
+            appState.baseParcels = document.getElementById('baseParcels').value;
+            appState.ofdTotal = document.getElementById('ofdTotal').value;
+            appState.ofdSigs = document.getElementById('ofdSigs').value;
+            appState.pciStops = document.getElementById('pciStops').value;
+            appState.customsCount = document.getElementById('customsCount').value;
+            appState.amRequestMade = document.getElementById('amRequestMade').value;
+            appState.amResponse = document.getElementById('amResponse').value;
+            appState.amSupervisor = document.getElementById('amSupervisor').value;
+            appState.amRefusalReason = document.getElementById('amRefusalReason').value;
+            appState.amStewardNotified = document.getElementById('amStewardNotified').value;
+            appState.amArt33Check = document.getElementById('amArt33Check').checked;
+            appState.amArt33Workflow = document.getElementById('amArt33Workflow').value;
+            appState.amArt33Notes = document.getElementById('amArt33Notes').value;
+            saveState();
+        }
+
+        function captureEODInputs() {
+            appState.eodArriveDepotTime = document.getElementById('eodArriveDepotTime').value;
+            appState.eodArriveDepotAmpm = document.getElementById('eodArriveDepotAmpm').value;
+            appState.eodOfficialEndTime = document.getElementById('eodOfficialEndTime').value;
+            appState.eodOfficialEndAmpm = document.getElementById('eodOfficialEndAmpm').value;
+            appState.eodDeliveredParcels = document.getElementById('eodDeliveredParcels').value;
+            appState.eodFlyerComplete = document.getElementById('eodFlyerComplete').checked;
+            appState.eodFlyerLeft = document.getElementById('eodFlyerLeft').value;
+            appState.eodScopeFactors = document.getElementById('eodScopeFactors').value;
+            appState.eodConditionsFactor = document.getElementById('eodConditionsFactor').value;
+            appState.eodReturns = document.getElementById('eodReturns').value;
+            appState.eodArt33Check = document.getElementById('eodArt33Check').checked;
+            appState.eodArt33Notes = document.getElementById('eodArt33Notes').value;
+            saveState();
+        }
+
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            el.addEventListener('input', () => {
+                captureAMInputs();
+                captureEODInputs();
+            });
+            el.addEventListener('change', () => {
+                captureAMInputs();
+                captureEODInputs();
+            });
+        });
+
+        document.getElementById('btn-save-am').addEventListener('click', () => {
+            captureAMInputs();
+            document.getElementById('am-status').innerText = '✅ Depot Setup Locked Successfully!';
+            setTimeout(() => { document.getElementById('am-status').innerText = ''; }, 3000);
+        });
+
+        document.getElementById('btn-save-eod').addEventListener('click', () => {
+            captureEODInputs();
+            document.getElementById('eod-status').innerText = '✅ End of Day Workflow Locked Successfully!';
+            setTimeout(() => { document.getElementById('eod-status').innerText = ''; }, 3000);
+        });
+
+        let currentBuildingPhoto = null;
+        document.getElementById('bldPhotoInput').addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                currentBuildingPhoto = e.target.files[0].name;
+                document.getElementById('bld-photo-status').innerText = `📷 Photo Attached: ${currentBuildingPhoto}`;
+            }
+        });
+
+        document.getElementById('btn-add-building').addEventListener('click', () => {
+            const address = document.getElementById('bldAddress').value;
+            if (!address) {
+                alert('Please enter a building address.');
+                return;
+            }
+            const item = {
+                address: address,
+                timeIn: document.getElementById('bldTimeIn').value + ' ' + document.getElementById('bldTimeInAmpm').value,
+                timeOut: document.getElementById('bldTimeOut').value + ' ' + document.getElementById('bldTimeOutAmpm').value,
+                flyers: document.getElementById('bldFlyers').value || 0,
+                parcels: document.getElementById('bldParcels').value || 0,
+                dollyRequired: document.getElementById('bldDollyRequired').checked,
+                oversize: document.getElementById('bldOversize').value || 0,
+                sigs: document.getElementById('bldSigs').value || 0,
+                customs: document.getElementById('bldCustoms').value || 0,
+                dollyTrips: document.getElementById('bldDollyTrips').value || 0,
+                doNotSafeDrop: document.getElementById('bldDoNotSafeDrop').value || 0,
+                carded: document.getElementById('bldCarded').value || 0,
+                customNotes: document.getElementById('bldCustomNotes').value,
+                photo: currentBuildingPhoto
+            };
+            appState.buildings.push(item);
+            saveState();
+            
+            document.getElementById('bldAddress').value = '';
+            document.getElementById('bldFlyers').value = '';
+            document.getElementById('bldParcels').value = '';
+            document.getElementById('bldDollyRequired').checked = false;
+            document.getElementById('bldOversize').value = '';
+            document.getElementById('bldSigs').value = '';
+            document.getElementById('bldCustoms').value = '';
+            document.getElementById('bldDollyTrips').value = '';
+            document.getElementById('bldDoNotSafeDrop').value = '';
+            document.getElementById('bldCarded').value = '';
+            document.getElementById('bldCustomNotes').value = '';
+            currentBuildingPhoto = null;
+            document.getElementById('bld-photo-status').innerText = '';
+
+            renderBuildings();
+        });
+
+        function renderBuildings() {
+            const listEl = document.getElementById('building-list');
+            listEl.innerHTML = appState.buildings.map((b, index) => `
+                <div class="logged-item">
+                    <strong>#${index + 1}: ${b.address}</strong><br>
+                    Time: ${b.timeIn} - ${b.timeOut}<br>
+                    Flyers: ${b.flyers} | Parcels: ${b.parcels} | Dolly Required: ${b.dollyRequired ? 'Yes' : 'No'}<br>
+                    Oversize: ${b.oversize} | Sigs: ${b.sigs} | Customs: ${b.customs} | Dolly Trips: ${b.dollyTrips}<br>
+                    🚫 Do Not Safe Drop: ${b.doNotSafeDrop} | 📝 Carded: ${b.carded}
+                    ${b.customNotes ? `<br><span style="color:var(--accent-orange);">Notes: ${b.customNotes}</span>` : ''}
+                    ${b.photo ? `<br><strong style="color:var(--accent-cyan);">📷 [PHOTO ATTACHED: ${b.photo}]</strong>` : ''}
+                </div>
+            `).join('') || '<div style="font-size:0.75rem; color:var(--text-secondary);">No buildings logged yet.</div>';
+        }
+
+        document.getElementById('btn-add-business').addEventListener('click', () => {
+            const address = document.getElementById('bizAddress').value;
+            if (!address) {
+                alert('Please enter a business name/address.');
+                return;
+            }
+            const item = {
+                address: address,
+                timeIn: document.getElementById('bizTimeIn').value + ' ' + document.getElementById('bizTimeInAmpm').value,
+                timeOut: document.getElementById('bizTimeOut').value + ' ' + document.getElementById('bizTimeOutAmpm').value,
+                parcels: document.getElementById('bizParcels').value || 0,
+                dollyRequired: document.getElementById('bizDollyRequired').checked,
+                oversize: document.getElementById('bizOversize').value || 0,
+                sigs: document.getElementById('bizSigs').value || 0,
+                customs: document.getElementById('bizCustoms').value || 0,
+                dollyTrips: document.getElementById('bizDollyTrips').value || 0,
+                doNotSafeDrop: document.getElementById('bizDoNotSafeDrop').value || 0,
+                carded: document.getElementById('bizCarded').value || 0,
+                customNotes: document.getElementById('bizCustomNotes').value
+            };
+            appState.businesses.push(item);
+            saveState();
+
+            document.getElementById('bizAddress').value = '';
+            document.getElementById('bizParcels').value = '';
+            document.getElementById('bizDollyRequired').checked = false;
+            document.getElementById('bizOversize').value = '';
+            document.getElementById('bizSigs').value = '';
+            document.getElementById('bizCustoms').value = '';
+            document.getElementById('bizDollyTrips').value = '';
+            document.getElementById('bizDoNotSafeDrop').value = '';
+            document.getElementById('bizCarded').value = '';
+            document.getElementById('bizCustomNotes').value = '';
+
+            renderBusinesses();
+        });
+
+        function renderBusinesses() {
+            const listEl = document.getElementById('business-list');
+            listEl.innerHTML = appState.businesses.map((b, index) => `
+                <div class="logged-item">
+                    <strong>#${index + 1}: ${b.address}</strong><br>
+                    Time: ${b.timeIn} - ${b.timeOut}<br>
+                    Parcels: ${b.parcels} | Dolly Required: ${b.dollyRequired ? 'Yes' : 'No'} | Oversize: ${b.oversize}<br>
+                    Sigs: ${b.sigs} | Customs: ${b.customs} | Dolly Trips: ${b.dollyTrips}<br>
+                    🚫 Do Not Safe Drop: ${b.doNotSafeDrop} | 📝 Carded: ${b.carded}
+                    ${b.customNotes ? `<br><span style="color:var(--accent-orange);">Notes: ${b.customNotes}</span>` : ''}
+                </div>
+            `).join('') || '<div style="font-size:0.75rem; color:var(--text-secondary);">No businesses logged yet.</div>';
+        }
+
+        document.getElementById('btn-add-residential').addEventListener('click', () => {
+            const address = document.getElementById('resAddress').value;
+            if (!address) {
+                alert('Please enter a house/street address.');
+                return;
+            }
+            const item = {
+                address: address,
+                timeIn: document.getElementById('resTimeIn').value + ' ' + document.getElementById('resTimeInAmpm').value,
+                timeOut: document.getElementById('resTimeOut').value + ' ' + document.getElementById('resTimeOutAmpm').value,
+                parcels: document.getElementById('resParcels').value || 0,
+                dollyRequired: document.getElementById('resDollyRequired').checked,
+                oversize: document.getElementById('resOversize').value || 0,
+                sigs: document.getElementById('resSigs').value || 0,
+                customs: document.getElementById('resCustoms').value || 0,
+                dollyTrips: document.getElementById('resDollyTrips').value || 0,
+                doNotSafeDrop: document.getElementById('resDoNotSafeDrop').value || 0,
+                carded: document.getElementById('resCarded').value || 0,
+                customNotes: document.getElementById('resCustomNotes').value
+            };
+            appState.residentials.push(item);
+            saveState();
+
+            document.getElementById('resAddress').value = '';
+            document.getElementById('resParcels').value = '';
+            document.getElementById('resDollyRequired').checked = false;
+            document.getElementById('resOversize').value = '';
+            document.getElementById('resSigs').value = '';
+            document.getElementById('resCustoms').value = '';
+            document.getElementById('resDollyTrips').value = '';
+            document.getElementById('resDoNotSafeDrop').value = '';
+            document.getElementById('resCarded').value = '';
+            document.getElementById('resCustomNotes').value = '';
+
+            renderResidentials();
+        });
+
+        function renderResidentials() {
+            const listEl = document.getElementById('residential-list');
+            listEl.innerHTML = appState.residentials.map((r, index) => `
+                <div class="logged-item">
+                    <strong>#${index + 1}: ${r.address}</strong><br>
+                    Time: ${r.timeIn} - ${r.timeOut}<br>
+                    Parcels to Door: ${r.parcels} | Dolly Required: ${r.dollyRequired ? 'Yes' : 'No'} | Oversize: ${r.oversize}<br>
+                    Sigs: ${r.sigs} | Customs: ${r.customs} | Dolly Trips: ${r.dollyTrips}<br>
+                    🚫 Do Not Safe Drop: ${r.doNotSafeDrop} | 📝 Carded: ${r.carded}
+                    ${r.customNotes ? `<br><span style="color:var(--accent-orange);">Notes: ${r.customNotes}</span>` : ''}
+                </div>
+            `).join('') || '<div style="font-size:0.75rem; color:var(--text-secondary);">No residential deliveries logged yet.</div>';
+        }
+
+        document.querySelectorAll('.break-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const label = btn.getAttribute('data-label');
+                const now = new Date();
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                const timeString = `${hours}:${minutes} ${ampm}`;
+                
+                appState.breaks.push({ type: label, time: timeString });
+                saveState();
+                renderBreaks();
+            });
+        });
+
+        function renderBreaks() {
+            const listEl = document.getElementById('break-list');
+            listEl.innerHTML = appState.breaks.map(b => `
+                <div class="logged-item" style="display:flex; justify-content:space-between;">
+                    <strong>${b.type}</strong> <span>${b.time}</span>
+                </div>
+            `).join('') || '<div style="font-size:0.75rem; color:var(--text-secondary);">No breaks logged yet.</div>';
+        }
+
+        document.getElementById('btn-log-setback').addEventListener('click', () => {
+            let causes = [];
+            if (document.getElementById('catFooting').checked) causes.push("Unmaintained Footing/Ice");
+            if (document.getElementById('catDog').checked) causes.push("Loose Dog/Animal Hazard");
+            if (document.getElementById('catCargo').checked) causes.push("Obstructed Cargo Floor/Overload");
+            if (document.getElementById('catAccess').checked) causes.push("Access/Elevator Delay");
+            if (document.getElementById('catTraffic').checked) causes.push("Traffic/Road Delay");
+            if (document.getElementById('catOther').checked) {
+                const otherTxt = document.getElementById('otherHazardText').value;
+                if(otherTxt) causes.push(`Other: ${otherTxt}`);
+                else causes.push("Other Hazard");
+            }
+
+            if (causes.length === 0) {
+                alert('Please select at least one hazard/setback category.');
+                return;
+            }
+
+            const { time, ampm } = getFormattedTime();
+            const timestamp = `${time} ${ampm}`;
+            const notes = document.getElementById('setbackNotes').value;
+
+            appState.setbacks.push({ timestamp: timestamp, categories: causes.join(' | '), notes: notes });
+            saveState();
+
+            document.getElementById('catFooting').checked = false;
+            document.getElementById('catDog').checked = false;
+            document.getElementById('catCargo').checked = false;
+            document.getElementById('catAccess').checked = false;
+            document.getElementById('catTraffic').checked = false;
+            document.getElementById('catOther').checked = false;
+            document.getElementById('otherHazardGroup').style.display = 'none';
+            document.getElementById('otherHazardText').value = '';
+            document.getElementById('setbackNotes').value = '';
+
+            renderSetbacks();
+        });
+
+        function renderSetbacks() {
+            const listEl = document.getElementById('setback-list');
+            listEl.innerHTML = appState.setbacks.map((s, index) => `
+                <div class="logged-item" style="border-color: var(--accent-orange);">
+                    <strong>⚠️ Incident #${index + 1} (${s.timestamp})</strong><br>
+                    <span style="color:var(--accent-orange); font-size:0.75rem;">${s.categories}</span>
+                    ${s.notes ? `<br>Notes: ${s.notes}` : ''}
+                </div>
+            `).join('') || '<div style="font-size:0.75rem; color:var(--text-secondary);">No setbacks logged.</div>';
+        }
+
+        function generateSummary() {
+            const dateStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+            let text = `CARRIER SHIELD SSD - DAILY WORKFLOW REPORT\n`;
+            text += `Date: ${dateStr}\n`;
+            text += `Route: ${appState.routeNo || 'N/A'}\n\n`;
+
+            text += `--- MORNING DEPOT SETUP ---\n`;
+            text += `Clock-In: ${appState.clockInTime} ${appState.clockInAmpm}\n`;
+            text += `Depot Departure: ${appState.depotDepartureTime} ${appState.depotDepartureAmpm}\n`;
+            text += `Prep Time: ${appState.prepStart} ${appState.prepStartAmpm} - ${appState.prepEnd} ${appState.prepEndAmpm}\n`;
+            text += `Mono Trays: ${appState.monoTrays || 0} | OS Trays: ${appState.osTrays || 0}\n`;
+            text += `Flyers: ${appState.flyerColor} | Sets: ${appState.flyerSets || 0} (Avg kit: ${appState.form81Sets || 0})\n\n`;
+
+            if (appState.fiveMinTalk || appState.gotGas || appState.snowClearing || appState.flyerHeavyLoad || appState.lateTruckTime) {
+                text += `Depot Task / Delay Flags:\n`;
+                if (appState.fiveMinTalk) text += `- 5 Min Talk Attended (${appState.fiveMinTalkTopic})\n`;
+                if (appState.gotGas) text += `- Fueling Stop Required\n`;
+                if (appState.snowClearing) text += `- De-Icing/Snow Clearing Required\n`;
+                if (appState.flyerHeavyLoad) text += `- Extra Load Time (Heavy Flyers)\n`;
+                if (appState.lateTruckTime) text += `- Late Truck Allowed-To-Go: ${appState.lateTruckTime} ${appState.lateTruckAmpm}\n`;
+                text += `\n`;
+            }
+
+            text += `--- SCANNER BASELINE ---\n`;
+            text += `Base Parcels: ${appState.baseParcels || 0} | OFD Parcels: ${appState.ofdTotal || 0}\n`;
+            text += `Signatures: ${appState.ofdSigs || 0} | Stops: ${appState.pciStops || 0} | Customs/CODs: ${appState.customsCount || 0}\n\n`;
+
+            if (appState.amRequestMade === 'Yes') {
+                text += `--- ARTICLE 48 OVERTIME ESCALATION (AM) ---\n`;
+                text += `Overload Identified: YES\n`;
+                text += `Management Response: ${appState.amResponse}\n`;
+                text += `Supervisor: ${appState.amSupervisor || 'Not specified'}\n`;
+                text += `Directives/Notes: ${appState.amRefusalReason || 'None provided'}\n`;
+                text += `Steward Notified (Art 50): ${appState.amStewardNotified}\n\n`;
+            }
+
+            if (appState.amArt33Check) {
+                text += `--- ARTICLE 33.13 ROUTE BURDEN REVIEW REQUEST ---\n`;
+                text += `Workflow Focus: ${appState.amArt33Workflow}\n`;
+                text += `Notes: ${appState.amArt33Notes || 'None provided'}\n\n`;
+            }
+
+            let totalAptFlyers = 0, totalAptParcels = 0, totalAptOversize = 0, totalAptSigs = 0, totalAptCustoms = 0, totalAptDollyTrips = 0;
+            appState.buildings.forEach(b => {
+                totalAptFlyers += parseInt(b.flyers) || 0;
+                totalAptParcels += parseInt(b.parcels) || 0;
+                totalAptOversize += parseInt(b.oversize) || 0;
+                totalAptSigs += parseInt(b.sigs) || 0;
+                totalAptCustoms += parseInt(b.customs) || 0;
+                totalAptDollyTrips += parseInt(b.dollyTrips) || 0;
+            });
+
+            text += `--- APARTMENTS / BUILDINGS (${appState.buildings.length} logged) ---\n`;
+            text += `Total Flyers: ${totalAptFlyers} | Total Parcels: ${totalAptParcels}\n`;
+            text += `Oversize: ${totalAptOversize} | Sigs: ${totalAptSigs} | Customs: ${totalAptCustoms} | Dolly Trips: ${totalAptDollyTrips}\n\n`;
+
+            let totalBizParcels = 0, totalBizOversize = 0, totalBizSigs = 0, totalBizCustoms = 0, totalBizDollyTrips = 0;
+            appState.businesses.forEach(b => {
+                totalBizParcels += parseInt(b.parcels) || 0;
+                totalBizOversize += parseInt(b.oversize) || 0;
+                totalBizSigs += parseInt(b.sigs) || 0;
+                totalBizCustoms += parseInt(b.customs) || 0;
+                totalBizDollyTrips += parseInt(b.dollyTrips) || 0;
+            });
+
+            text += `--- BUSINESS DELIVERIES (${appState.businesses.length} logged) ---\n`;
+            text += `Total Parcels: ${totalBizParcels} | Oversize: ${totalBizOversize} | Sigs: ${totalBizSigs} | Customs: ${totalBizCustoms} | Dolly Trips: ${totalBizDollyTrips}\n\n`;
+
+            let totalResParcels = 0, totalResOversize = 0, totalResSigs = 0, totalResCustoms = 0, totalResDollyTrips = 0;
+            appState.residentials.forEach(r => {
+                totalResParcels += parseInt(r.parcels) || 0;
+                totalResOversize += parseInt(r.oversize) || 0;
+                totalResSigs += parseInt(r.sigs) || 0;
+                totalResCustoms += parseInt(r.customs) || 0;
+                totalResDollyTrips += parseInt(r.dollyTrips) || 0;
+            });
+
+            text += `--- RESIDENTIAL DOOR-TO-DOOR (${appState.residentials.length} logged) ---\n`;
+            text += `Total Parcels: ${totalResParcels} | Oversize: ${totalResOversize} | Sigs: ${totalResSigs} | Customs: ${totalResCustoms} | Dolly Trips: ${totalResDollyTrips}\n\n`;
+
+            text += `--- REST PERIODS & LUNCH ---\n`;
+            if (appState.breaks.length > 0) {
+                appState.breaks.forEach(b => {
+                    text += `- ${b.type}: ${b.time}\n`;
+                });
+            } else {
+                text += `No breaks logged.\n`;
+            }
+            text += `\n`;
+
+            if (appState.setbacks.length > 0) {
+                text += `--- HAZARDS & SETBACKS (${appState.setbacks.length}) ---\n`;
+                appState.setbacks.forEach((s, idx) => {
+                    text += `#${idx + 1} (${s.timestamp}): ${s.categories}\n`;
+                    if (s.notes) text += `Notes: ${s.notes}\n`;
+                });
+                text += `\n`;
+            }
+
+            text += `--- END OF DAY JOB SCOPE & VERIFICATION (ARTICLE 50 / 0.38) ---\n`;
+            text += `Arrive at Depot: ${appState.eodArriveDepotTime} ${appState.eodArriveDepotAmpm}\n`;
+            text += `Official End Time: ${appState.eodOfficialEndTime} ${appState.eodOfficialEndAmpm}\n`;
+            text += `Parcels Delivered: ${appState.eodDeliveredParcels || 0}\n`;
+            text += `Flyer 100% Complete: ${appState.eodFlyerComplete ? 'Yes' : 'No'}\n`;
+            
+            if (!appState.eodFlyerComplete) {
+                text += `Flyers Left: ${appState.eodFlyerLeft || 'None specified'}\n`;
+            }
+            
+            text += `Scope / Distance Factors: ${appState.eodScopeFactors || 'None'}\n`;
+            text += `Climatic/Volume Conditions: ${appState.eodConditionsFactor}\n`;
+            if (appState.eodReturns) {
+                text += `Returns Breakdown: ${appState.eodReturns}\n`;
+            }
+
+            if (appState.eodArt33Check) {
+                text += `\n*** EOD ARTICLE 33.13 OVERBURDEN RECORD ***\n`;
+                text += `Notes: ${appState.eodArt33Notes || 'None provided'}\n`;
+            }
+
+            document.getElementById('summary-content').innerText = text;
+        }
+
+        document.getElementById('btn-copy-summary').addEventListener('click', () => {
+            const text = document.getElementById('summary-content').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Summary copied to clipboard! You can now paste this into an email, SMS, or incident report.');
+            }).catch(err => {
+                alert('Failed to copy text. You may need to manually select and copy it.');
+                console.error('Copy failed', err);
+            });
+        });
+
+        loadSavedState();
+
+    </script>
+</body>
+</html>
